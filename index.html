@@ -8,7 +8,12 @@
 </head>
 <body>
     <nav class="menu">
-        <a href="#" class="menu-item">Главная</a>
+        <div class="menu-left">
+            <a href="#" class="menu-item">Главная</a>
+            <button class="add-btn" id="add-btn">+</button>
+            <button class="export-btn" id="export-btn">↓</button>
+            <button class="edit-btn" id="edit-btn">✎</button>
+        </div>
         <div class="menu-center">
             <input type="text" class="search-input" placeholder="Поиск...">
         </div>
@@ -20,6 +25,75 @@
     <main class="content">
         <div id="assets-container" class="assets-grid"></div>
     </main>
-    <script src="scripts/assets.js"></script>
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #e0e0e0; margin-bottom: 20px;">Добавить ассет</h3>
+            <div id="drop-zone" class="drop-zone">
+                <span>Перетащите PNG сюда или нажмите</span>
+            </div>
+            <input type="file" id="file-input" accept=".png" style="display: none;">
+            <input type="file" id="file-path-input" accept=".png" webkitdirectory style="display: none;">
+            <div style="margin-top: 15px;">
+                <input type="text" id="asset-name" class="modal-input" placeholder="Название файла">
+            </div>
+            <div style="margin-top: 10px;">
+                <input type="text" id="asset-tags" class="modal-input" placeholder="Теги (через пробел, запятую или ;)">
+            </div>
+            <div style="margin-top: 10px;">
+                <select id="data-file-select" class="modal-input">
+                    <option value="assets_other.js">assets_other.js</option>
+                    <option value="assets_plants.js">assets_plants.js</option>
+                    <option value="assets_ui.js">assets_ui.js</option>
+                    <option value="assets_zombie.js">assets_zombie.js</option>
+                </select>
+            </div>
+            <button id="save-asset-btn" class="modal-save-btn">Сохранить</button>
+        </div>
+    </div>
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #e0e0e0; margin-bottom: 20px;">Экспорт ассета</h3>
+            <p style="color: #888; margin-bottom: 15px;">Выберите файл для экспорта:</p>
+            <div style="margin-bottom: 15px;">
+                <select id="export-file-select" class="modal-input">
+                    <option value="assets_other">assets_other.js</option>
+                    <option value="assets_plants">assets_plants.js</option>
+                    <option value="assets_ui">assets_ui.js</option>
+                    <option value="assets_zombie">assets_zombie.js</option>
+                </select>
+            </div>
+            <button id="do-export-btn" class="modal-save-btn">Скачать</button>
+        </div>
+    </div>
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #e0e0e0; margin-bottom: 20px;">Редактировать ассет</h3>
+            <div id="edit-preview" class="drop-zone" style="padding: 20px;"></div>
+            <div style="margin-top: 15px;">
+                <input type="text" id="edit-name" class="modal-input" placeholder="Название файла">
+            </div>
+            <div style="margin-top: 10px;">
+                <input type="text" id="edit-tags" class="modal-input" placeholder="Теги (через пробел, запятую или ;)">
+            </div>
+            <div style="margin-top: 10px;">
+                <select id="edit-file-select" class="modal-input">
+                    <option value="assets_other">assets_other.js</option>
+                    <option value="assets_plants">assets_plants.js</option>
+                    <option value="assets_ui">assets_ui.js</option>
+                    <option value="assets_zombie">assets_zombie.js</option>
+                </select>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button id="save-edit-btn" class="modal-save-btn" style="flex: 1;">Сохранить</button>
+                <button id="delete-asset-btn" class="modal-delete-btn">Удалить</button>
+            </div>
+        </div>
+    </div>
+    <script src="data/assets_other.js"></script>
+<script src="data/assets_ui.js"></script>
+<script src="data/assets_plants.js"></script>
+<script src="data/assets_zombie.js"></script>
+<script src="scripts/assets.js"></script>
+<script src="scripts/add.js"></script>
 </body>
 </html>

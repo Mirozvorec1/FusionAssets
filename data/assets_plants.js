@@ -1,12 +1,12 @@
-[
+const assetsPlants = [
   {
     "name": "Melonpult",
-    "path": "data/assets/Растения/Стандартные/Арбузопульта/Melonpult.png",
+    "path": "data/assets/plants/Melonpult.png",
     "tags": ["растение", "стандартный", "арбузопульта"]
   },
   {
     "name": "Melonpult_0",
-    "path": "data/assets/Растения/Стандартные/Арбузопульта/Melonpult_0.png",
+    "path": "data/assets/plants/Melonpult_0.png",
     "tags": ["растение", "стандартный", "арбузопульта"]
   }
-]
+];
