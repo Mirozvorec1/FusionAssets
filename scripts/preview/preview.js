@@ -178,7 +178,7 @@ document.addEventListener('mousedown', (e) => {
             previewDragging = true;
             previewMouseMoved = false;
             previewMouseDownPos = { x: e.clientX, y: e.clientY };
-            previewDragStart = { x: e.clientX - previewImageOffset.x, y: e.clientY - previewImageOffset.y };
+            previewDragStart = { ...previewImageOffset };
             previewImage.style.cursor = 'grabbing';
             e.preventDefault();
         }
@@ -187,13 +187,15 @@ document.addEventListener('mousedown', (e) => {
 
 document.addEventListener('mousemove', (e) => {
     if (previewDragging) {
-        const dx = Math.abs(e.clientX - previewMouseDownPos.x);
-        const dy = Math.abs(e.clientY - previewMouseDownPos.y);
-        if (dx > 3 || dy > 3) {
+        const absDx = Math.abs(e.clientX - previewMouseDownPos.x);
+        const absDy = Math.abs(e.clientY - previewMouseDownPos.y);
+        if (absDx > 3 || absDy > 3) {
             previewMouseMoved = true;
         }
-        previewImageOffset.x = (e.clientX - previewDragStart.x) / previewZoom;
-        previewImageOffset.y = (e.clientY - previewDragStart.y) / previewZoom;
+        const dx = e.clientX - previewMouseDownPos.x;
+        const dy = e.clientY - previewMouseDownPos.y;
+        previewImageOffset.x = previewDragStart.x + dx / previewZoom;
+        previewImageOffset.y = previewDragStart.y + dy / previewZoom;
         const previewImage = document.getElementById('preview-image');
         if (previewImage) {
             previewImage.style.transform = `scale(${previewZoom}) translate(${previewImageOffset.x}px, ${previewImageOffset.y}px)`;

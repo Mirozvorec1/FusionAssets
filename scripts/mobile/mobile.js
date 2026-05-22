@@ -8,9 +8,25 @@
     let touchDragging = false;
     let touchDragStart = { x: 0, y: 0 };
 
+    let pinchStartDist = 0;
+    let pinchStartZoom = 1;
+
+    function getTouchDist(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     document.addEventListener('touchstart', (e) => {
         const previewModal = document.getElementById('preview-modal');
         if (!previewModal || !previewModal.classList.contains('active')) return;
+
+        if (e.touches.length === 2) {
+            pinchStartDist = getTouchDist(e.touches);
+            pinchStartZoom = previewZoom;
+            touchDragging = false;
+            return;
+        }
 
         const previewImage = document.getElementById('preview-image');
         const touch = e.touches[0];
@@ -20,13 +36,22 @@
 
         if (previewImage && e.target === previewImage) {
             touchDragging = true;
-            touchDragStart = { x: touch.clientX - previewImageOffset.x, y: touch.clientY - previewImageOffset.y };
+            touchDragStart = { ...previewImageOffset };
         }
     }, { passive: true });
 
     document.addEventListener('touchmove', (e) => {
         const previewModal = document.getElementById('preview-modal');
         if (!previewModal || !previewModal.classList.contains('active')) return;
+
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const dist = getTouchDist(e.touches);
+            const scale = dist / pinchStartDist;
+            const newZoom = Math.max(0.1, Math.min(10, pinchStartZoom * scale));
+            updateZoom(newZoom - previewZoom);
+            return;
+        }
 
         const touch = e.touches[0];
         const deltaY = touch.clientY - touchStartY;
@@ -35,8 +60,10 @@
 
         if (touchDragging) {
             e.preventDefault();
-            previewImageOffset.x = (touch.clientX - touchDragStart.x) / previewZoom;
-            previewImageOffset.y = (touch.clientY - touchDragStart.y) / previewZoom;
+            const dx = touch.clientX - touchStartX;
+            const dy = touch.clientY - touchStartY;
+            previewImageOffset.x = touchDragStart.x + dx / previewZoom;
+            previewImageOffset.y = touchDragStart.y + dy / previewZoom;
             const previewImage = document.getElementById('preview-image');
             if (previewImage) {
                 previewImage.style.transform = `scale(${previewZoom}) translate(${previewImageOffset.x}px, ${previewImageOffset.y}px)`;
