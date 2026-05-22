@@ -15,6 +15,7 @@
             <button class="add-btn" id="add-btn" style="display: none;">+</button>
             <button class="export-btn" id="export-btn" style="display: none;">↓</button>
             <button class="edit-btn" id="edit-btn" style="display: none;">✎</button>
+            <button class="edit-btn" id="bulk-btn" style="display: none;" title="Импорт папки">📁</button>
         </div>
         <div class="menu-center">
             <input type="text" class="search-input" placeholder="Поиск...">
@@ -73,8 +74,9 @@
         <div class="modal-content">
             <h3 style="color: #e0e0e0; margin-bottom: 20px;">Редактировать ассет</h3>
             <div id="edit-preview" class="drop-zone" style="padding: 20px;"></div>
-            <div style="margin-top: 15px;">
-                <input type="text" id="edit-name" class="modal-input" placeholder="Название файла">
+            <div style="margin-top: 15px; position: relative;">
+                <input type="text" id="edit-name" class="modal-input" placeholder="Название файла" style="padding-right: 100px;">
+                <button id="update-name-btn" class="modal-save-btn" style="display: none; position: absolute; right: 4px; top: 4px; width: auto; padding: 6px 10px; margin: 0; white-space: nowrap; font-size: 12px; border-radius: 3px;">Обновить</button>
             </div>
             <div style="margin-top: 10px;">
                 <div id="edit-tags-container" class="tags-container">

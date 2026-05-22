@@ -9,6 +9,7 @@ function createAssetCard(asset) {
     const filename = `${asset.name}.${ext}`;
     const card = document.createElement('div');
     card.className = 'asset-card';
+    card.dataset.path = asset.path;
     const img = document.createElement('img');
     img.src = asset.path;
     img.alt = asset.name;
@@ -26,9 +27,20 @@ function createAssetCard(asset) {
         downloadAsset(asset.path, filename, btn);
     });
     card.addEventListener('click', () => {
-        if (window.editMode) return;
-        openPreview(asset.path, asset.name);
+        openPreview(img.src, asset.name);
     });
+    const editIcon = document.createElement('button');
+    editIcon.className = 'card-edit-btn';
+    editIcon.textContent = '✎';
+    editIcon.title = 'Редактировать';
+    editIcon.style.display = 'none';
+    editIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof openEditModal === 'function') {
+            openEditModal(card);
+        }
+    });
+    card.appendChild(editIcon);
     card.appendChild(img);
     card.appendChild(nameEl);
     card.appendChild(btn);
@@ -159,22 +171,24 @@ function searchAssets(query) {
     const spinner = document.getElementById('search-spinner');
     if (spinner) spinner.style.display = 'block';
 
-    const searchQuery = query.toLowerCase().trim();
-    if (!searchQuery) {
-        renderAssets();
+    requestAnimationFrame(() => {
+        const searchQuery = query.toLowerCase().trim();
+        if (!searchQuery) {
+            renderAssets();
+            if (spinner) spinner.style.display = 'none';
+            return;
+        }
+        const searchParts = searchQuery.split(/[ ,;]+/).filter(p => p);
+        const filtered = window.assets.filter(asset => {
+            const nameMatch = asset.name.toLowerCase();
+            const tagMatch = asset.tags.join(' ');
+            return searchParts.every(part =>
+                nameMatch.includes(part) || tagMatch.includes(part)
+            );
+        });
+        renderAssets(filtered, searchQuery);
         if (spinner) spinner.style.display = 'none';
-        return;
-    }
-    const searchParts = searchQuery.split(/[ ,;]+/).filter(p => p);
-    const filtered = window.assets.filter(asset => {
-        const nameMatch = asset.name.toLowerCase();
-        const tagMatch = asset.tags.join(' ');
-        return searchParts.every(part =>
-            nameMatch.includes(part) || tagMatch.includes(part)
-        );
     });
-    renderAssets(filtered, searchQuery);
-    if (spinner) spinner.style.display = 'none';
 }
 
 document.addEventListener('DOMContentLoaded', loadAssets);

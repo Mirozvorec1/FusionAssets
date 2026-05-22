@@ -86,19 +86,24 @@ function getBasePathForKey(key) {
 const addBtn = document.getElementById('add-btn');
 const exportBtn = document.getElementById('export-btn');
 const editBtn = document.getElementById('edit-btn');
+const bulkBtn = document.getElementById('bulk-btn');
 const modal = document.getElementById('add-modal');
 const exportModal = document.getElementById('export-modal');
 const editModal = document.getElementById('edit-modal');
+const bulkInput = document.getElementById('file-path-input');
 
 if (addBtn) addBtn.style.display = ENABLED ? 'flex' : 'none';
 if (exportBtn) exportBtn.style.display = ENABLED ? 'flex' : 'none';
 if (editBtn) editBtn.style.display = ENABLED ? 'flex' : 'none';
+if (bulkBtn) bulkBtn.style.display = ENABLED ? 'flex' : 'none';
 
 let editMode = false;
 window.editMode = false;
 let selectedCard = null;
 let selectedAsset = null;
 let deletedPaths = [];
+let lastClickCard = null;
+let lastClickTime = 0;
 
 if (ENABLED) {
     initTagsContainer('asset-tags-container');
@@ -129,54 +134,122 @@ if (ENABLED) {
         window.editMode = editMode;
         editBtn.classList.toggle('active', editMode);
         document.querySelectorAll('.asset-card').forEach(card => {
-            card.style.cursor = editMode ? 'pointer' : 'default';
+            const icon = card.querySelector('.card-edit-btn');
+            if (icon) icon.style.display = editMode ? 'flex' : 'none';
         });
+    });
+
+    function detectCategory(path) {
+        const lower = path.toLowerCase();
+        if (lower.includes('plants') || lower.includes('plant')) return 'assets_plants.js';
+        if (lower.includes('ui') || lower.includes('userinterface')) return 'assets_ui.js';
+        if (lower.includes('zombie')) return 'assets_zombies.js';
+        return 'assets_other.js';
+    }
+
+    const bulkFileInput = document.createElement('input');
+    bulkFileInput.type = 'file';
+    bulkFileInput.accept = '.png';
+    bulkFileInput.webkitdirectory = true;
+    bulkFileInput.style.display = 'none';
+    document.body.appendChild(bulkFileInput);
+
+    bulkBtn.addEventListener('click', () => {
+        bulkFileInput.click();
+    });
+
+    bulkFileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []);
+        const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png'));
+        if (pngFiles.length === 0) {
+            alert('PNG файлы не найдены');
+            return;
+        }
+
+        let added = 0;
+        const container = document.getElementById('assets-container');
+
+        for (const file of pngFiles) {
+            const relativePath = file.webkitRelativePath || file.name;
+            const name = file.name.replace(/\.png$/i, '');
+            const fileSelect = detectCategory(relativePath);
+            const basePath = getBasePathForKey(fileSelect);
+            const path = `${basePath}${file.name}`;
+
+            if (window.assets.some(a => a.path === path)) continue;
+
+            const newAsset = { name, path, tags: [] };
+            window.assets.push(newAsset);
+
+            if (container) {
+                container.appendChild(createAssetCard(newAsset));
+            }
+            added++;
+        }
+
+        alert(`Добавлено ассетов: ${added}${pngFiles.length - added > 0 ? `\nПропущено (уже есть): ${pngFiles.length - added}` : ''}`);
     });
 
     document.addEventListener('click', (e) => {
         const card = e.target.closest('.asset-card');
         if (editMode && card && !e.target.closest('.download-btn')) {
-            selectedCard = card;
-            const name = card.querySelector('.asset-name')?.textContent || '';
-            const img = card.querySelector('img')?.src || '';
-            selectedAsset = window.assets.find(a => a.name === name) || null;
-
-            let currentFile = 'assets_other';
-            const path = selectedAsset?.path || '';
-
-            if (path.includes('/plants/')) currentFile = 'assets_plants';
-            else if (path.includes('/ui/')) currentFile = 'assets_ui';
-            else if (path.includes('/other/')) currentFile = 'assets_other';
-            else if (path.includes('/zombies/')) currentFile = 'assets_zombies';
-
-            document.getElementById('edit-name').value = name;
-            setTagsInContainer(document.getElementById('edit-tags-container'), selectedAsset ? selectedAsset.tags : []);
-            document.getElementById('edit-file-select').value = currentFile;
-            const editPreview = document.getElementById('edit-preview');
-            editPreview.innerHTML = '';
-            if (img) {
-                const previewImg = document.createElement('img');
-                previewImg.src = img;
-                previewImg.style.maxWidth = '100%';
-                previewImg.style.maxHeight = '100px';
-                previewImg.style.objectFit = 'contain';
-                editPreview.appendChild(previewImg);
+            const now = Date.now();
+            if (card === lastClickCard && now - lastClickTime < 350) {
+                openEditModal(card);
             }
-
-            const fileSelect = document.getElementById('edit-file-select');
-            fileSelect.onchange = () => {
-                if (selectedAsset) {
-                    const basePath = filePathMap[fileSelect.value] || 'data/assets/other/';
-                    const fileName = selectedAsset.path.split('/').pop();
-                    selectedAsset.path = `${basePath}${fileName}`;
-                }
-            };
-
-            editModal.style.display = 'flex';
+            lastClickCard = card;
+            lastClickTime = now;
         }
     });
 
+    function openEditModal(card) {
+        selectedCard = card;
+        const assetPath = card.dataset.path;
+        selectedAsset = null;
+        if (assetPath) {
+            selectedAsset = window.assets.find(a => a.path === assetPath) || null;
+        }
+
+        let currentFile = 'assets_other';
+
+        if (assetPath.includes('/plants/')) currentFile = 'assets_plants';
+        else if (assetPath.includes('/ui/')) currentFile = 'assets_ui';
+        else if (assetPath.includes('/other/')) currentFile = 'assets_other';
+        else if (assetPath.includes('/zombies/')) currentFile = 'assets_zombies';
+
+        document.getElementById('edit-name').value = selectedAsset?.name || '';
+        setTagsInContainer(document.getElementById('edit-tags-container'), selectedAsset ? selectedAsset.tags : []);
+        document.getElementById('edit-file-select').value = currentFile;
+        const editPreview = document.getElementById('edit-preview');
+        editPreview.innerHTML = '';
+        const cardImg = card.querySelector('img');
+        if (cardImg) {
+            const previewImg = document.createElement('img');
+            previewImg.src = cardImg.src;
+            previewImg.style.maxWidth = '100%';
+            previewImg.style.maxHeight = '100px';
+            previewImg.style.objectFit = 'contain';
+            editPreview.appendChild(previewImg);
+        }
+
+        const fileSelect = document.getElementById('edit-file-select');
+        fileSelect.onchange = () => {
+            if (selectedAsset) {
+                const basePath = filePathMap[fileSelect.value] || 'data/assets/other/';
+                const fileName = selectedAsset.path.split('/').pop();
+                selectedAsset.path = `${basePath}${fileName}`;
+            }
+        };
+
+        if (updateNameBtn) updateNameBtn.style.display = 'none';
+        editDroppedFileName = '';
+        editModal.style.display = 'flex';
+    }
+
     const editPreview = document.getElementById('edit-preview');
+    const updateNameBtn = document.getElementById('update-name-btn');
+    let editDroppedFileName = '';
+
     editPreview.ondragover = (e) => {
         e.preventDefault();
         editPreview.classList.add('drag-over');
@@ -189,6 +262,11 @@ if (ENABLED) {
         editPreview.classList.remove('drag-over');
         const file = e.dataTransfer.files[0];
         if (file && file.name.endsWith('.png')) {
+            editDroppedFileName = file.name.replace(/\.png$/i, '');
+            if (selectedAsset) {
+                const basePath = selectedAsset.path.substring(0, selectedAsset.path.lastIndexOf('/') + 1);
+                selectedAsset.path = `${basePath}${file.name}`;
+            }
             const reader = new FileReader();
             reader.onload = (ev) => {
                 editPreview.innerHTML = '';
@@ -202,32 +280,44 @@ if (ENABLED) {
                     const imgEl = selectedCard.querySelector('img');
                     if (imgEl) imgEl.src = ev.target.result;
                 }
+                const nameInput = document.getElementById('edit-name');
+                if (updateNameBtn && nameInput && editDroppedFileName !== nameInput.value) {
+                    updateNameBtn.style.display = 'block';
+                }
             };
             reader.readAsDataURL(file);
         }
     };
 
+    if (updateNameBtn) {
+        updateNameBtn.addEventListener('click', () => {
+            const nameInput = document.getElementById('edit-name');
+            if (nameInput && editDroppedFileName) {
+                nameInput.value = editDroppedFileName;
+                updateNameBtn.style.display = 'none';
+            }
+        });
+    }
+
     editModal.addEventListener('click', (e) => {
         if (e.target === editModal) {
             editModal.style.display = 'none';
-            editMode = false;
-            window.editMode = false;
-            editBtn.classList.remove('active');
             selectedCard = null;
             selectedAsset = null;
+            editDroppedFileName = '';
+            if (updateNameBtn) updateNameBtn.style.display = 'none';
             setTagsInContainer(document.getElementById('edit-tags-container'), []);
         }
     });
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
+            if (e.key === 'Escape') {
             if (editModal.style.display === 'flex') {
                 editModal.style.display = 'none';
-                editMode = false;
-                window.editMode = false;
-                editBtn.classList.remove('active');
                 selectedCard = null;
                 selectedAsset = null;
+                editDroppedFileName = '';
+                if (updateNameBtn) updateNameBtn.style.display = 'none';
                 setTagsInContainer(document.getElementById('edit-tags-container'), []);
             } else if (exportModal.style.display === 'flex') {
                 exportModal.style.display = 'none';
@@ -249,32 +339,40 @@ if (ENABLED) {
             if (selectedAsset) {
                 selectedAsset.name = name;
                 selectedAsset.tags = tags;
+                const basePath = filePathMap[fileSelect] || 'data/assets/other/';
+                const fileName = selectedAsset.path.split('/').pop();
+                selectedAsset.path = `${basePath}${fileName}`;
                 selectedCard.querySelector('.asset-name').textContent = name;
+                const imgEl = selectedCard.querySelector('img');
+                if (imgEl) {
+                    if (!imgEl.src.startsWith('data:')) {
+                        imgEl.src = selectedAsset.path;
+                    }
+                    imgEl.alt = name;
+                }
             }
             editModal.style.display = 'none';
-            editMode = false;
-            window.editMode = false;
-            editBtn.classList.remove('active');
             selectedCard = null;
             selectedAsset = null;
+            editDroppedFileName = '';
+            if (updateNameBtn) updateNameBtn.style.display = 'none';
             setTagsInContainer(document.getElementById('edit-tags-container'), []);
         });
     }
 
     if (deleteBtn) {
         deleteBtn.addEventListener('click', () => {
-            if (selectedAsset) {
-                deletedPaths.push(selectedAsset.path);
-                const idx = window.assets.indexOf(selectedAsset);
-                if (idx !== -1) window.assets.splice(idx, 1);
-            }
+            if (!selectedAsset) return;
+            if (!confirm(`Удалить ассет "${selectedAsset.name}"?`)) return;
+            deletedPaths.push(selectedAsset.path);
+            const idx = window.assets.indexOf(selectedAsset);
+            if (idx !== -1) window.assets.splice(idx, 1);
             if (selectedCard) selectedCard.remove();
             editModal.style.display = 'none';
-            editMode = false;
-            window.editMode = false;
-            editBtn.classList.remove('active');
             selectedCard = null;
             selectedAsset = null;
+            editDroppedFileName = '';
+            if (updateNameBtn) updateNameBtn.style.display = 'none';
             setTagsInContainer(document.getElementById('edit-tags-container'), []);
         });
     }
@@ -430,30 +528,7 @@ if (ENABLED) {
 
                 const container = document.getElementById('assets-container');
                 if (container) {
-                    const ext = path.split('.').pop();
-                    const card = document.createElement('div');
-                    card.className = 'asset-card';
-                    const img = document.createElement('img');
-                    img.src = path;
-                    img.alt = newAsset.name;
-                    img.className = 'asset-image';
-                    img.onerror = function() { this.style.display = 'none'; };
-                    const nameEl = document.createElement('div');
-                    nameEl.className = 'asset-name';
-                    nameEl.textContent = newAsset.name;
-                    nameEl.title = newAsset.name;
-                    const btn = document.createElement('button');
-                    btn.className = 'download-btn';
-                    btn.textContent = 'Скачать';
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        downloadAsset(path, `${newAsset.name}.${ext}`, btn);
-                    });
-                    card.addEventListener('click', () => openPreview(path, newAsset.name));
-                    card.appendChild(img);
-                    card.appendChild(nameEl);
-                    card.appendChild(btn);
-                    container.appendChild(card);
+                    container.appendChild(createAssetCard(newAsset));
                 }
 
                 modal.style.display = 'none';
