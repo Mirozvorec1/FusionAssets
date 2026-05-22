@@ -90,7 +90,7 @@ body {
 }
 
 .export-btn, .add-btn, .edit-btn {
-    display: flex;
+    display: none;
 }
 
 .modal {

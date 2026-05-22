@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FusionAssets</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="scripts/mobile/mobile.css">
 </head>
 <body>
     <nav class="menu">
         <div class="menu-left">
-            <a href="#" class="menu-item">Главная</a>
-            <button class="add-btn" id="add-btn">+</button>
-            <button class="export-btn" id="export-btn">↓</button>
-            <button class="edit-btn" id="edit-btn">✎</button>
+            <a href="index.html" class="menu-item">Главная</a>
+            <button class="add-btn" id="add-btn" style="display: none;">+</button>
+            <button class="export-btn" id="export-btn" style="display: none;">↓</button>
+            <button class="edit-btn" id="edit-btn" style="display: none;">✎</button>
         </div>
         <div class="menu-center">
             <input type="text" class="search-input" placeholder="Поиск...">
@@ -46,7 +47,7 @@
                     <option value="assets_other.js">assets_other.js</option>
                     <option value="assets_plants.js">assets_plants.js</option>
                     <option value="assets_ui.js">assets_ui.js</option>
-                    <option value="assets_zombie.js">assets_zombie.js</option>
+                    <option value="assets_zombies.js">assets_zombies.js</option>
                 </select>
             </div>
             <button id="save-asset-btn" class="modal-save-btn">Сохранить</button>
@@ -61,7 +62,7 @@
                     <option value="assets_other">assets_other.js</option>
                     <option value="assets_plants">assets_plants.js</option>
                     <option value="assets_ui">assets_ui.js</option>
-                    <option value="assets_zombie">assets_zombie.js</option>
+                    <option value="assets_zombies">assets_zombies.js</option>
                 </select>
             </div>
             <button id="do-export-btn" class="modal-save-btn">Скачать</button>
@@ -84,7 +85,7 @@
                     <option value="assets_other">assets_other.js</option>
                     <option value="assets_plants">assets_plants.js</option>
                     <option value="assets_ui">assets_ui.js</option>
-                    <option value="assets_zombie">assets_zombie.js</option>
+                    <option value="assets_zombies">assets_zombies.js</option>
                 </select>
             </div>
             <div style="margin-top: 15px; display: flex; gap: 10px;">
@@ -110,8 +111,9 @@
     <script src="data/assets_other.js"></script>
 <script src="data/assets_ui.js"></script>
 <script src="data/assets_plants.js"></script>
-<script src="data/assets_zombie.js"></script>
+<script src="data/assets_zombies.js"></script>
 <script src="scripts/assets.js"></script>
 <script src="scripts/add.js"></script>
+<script src="scripts/mobile/mobile.js"></script>
 </body>
 </html>

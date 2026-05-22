@@ -46,7 +46,7 @@ function debounce(fn, delay) {
 function loadAssets() {
     const assets = [];
     window.assets = assets;
-    const dataFiles = [assetsData, assetsUI, assetsPlants, assetsZombie];
+    const dataFiles = [assetsData, assetsUI, assetsPlants, assetsZombies];
     const seen = new Set();
     for (const data of dataFiles) {
         for (const asset of data) {

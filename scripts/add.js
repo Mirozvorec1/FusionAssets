@@ -72,11 +72,11 @@ const filePathMap = {
     'assets_other.js': 'data/assets/other/',
     'assets_plants.js': 'data/assets/plants/',
     'assets_ui.js': 'data/assets/ui/',
-    'assets_zombie.js': 'data/assets/zombie/',
+    'assets_zombies.js': 'data/assets/zombies/',
     'assets_other': 'data/assets/other/',
     'assets_plants': 'data/assets/plants/',
     'assets_ui': 'data/assets/ui/',
-    'assets_zombie': 'data/assets/zombie/'
+    'assets_zombies': 'data/assets/zombies/'
 };
 
 function getBasePathForKey(key) {
@@ -147,7 +147,7 @@ if (ENABLED) {
             if (path.includes('/plants/')) currentFile = 'assets_plants';
             else if (path.includes('/ui/')) currentFile = 'assets_ui';
             else if (path.includes('/other/')) currentFile = 'assets_other';
-            else if (path.includes('/zombie/')) currentFile = 'assets_zombie';
+            else if (path.includes('/zombies/')) currentFile = 'assets_zombies';
 
             document.getElementById('edit-name').value = name;
             setTagsInContainer(document.getElementById('edit-tags-container'), selectedAsset ? selectedAsset.tags : []);
@@ -290,7 +290,7 @@ if (ENABLED) {
                 case 'assets_other': data = [...assetsData]; break;
                 case 'assets_plants': data = [...assetsPlants]; break;
                 case 'assets_ui': data = [...assetsUI]; break;
-                case 'assets_zombie': data = [...assetsZombie]; break;
+                case 'assets_zombies': data = [...assetsZombies]; break;
             }
 
             const basePath = getBasePathForKey(varName);
