@@ -1,5 +1,5 @@
 const ENABLED_STORAGE_KEY = 'fusionassets_debug_mode';
-const ENABLED = localStorage.getItem(ENABLED_STORAGE_KEY) !== 'false';
+const ENABLED = localStorage.getItem(ENABLED_STORAGE_KEY) === 'true';
 
 function createTagChip(container, text) {
     const chip = document.createElement('span');
