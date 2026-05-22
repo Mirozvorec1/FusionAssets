@@ -150,7 +150,6 @@ document.addEventListener('click', (e) => {
             return;
         }
         if (e.target === previewModal) {
-            closePreview();
             return;
         }
     }
