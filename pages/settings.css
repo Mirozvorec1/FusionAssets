@@ -1,0 +1,26 @@
+.settings-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.settings-card {
+    background-color: #2d2d2d;
+    border-radius: 8px;
+    border: 1px solid #404040;
+    padding: 20px;
+}
+
+.settings-section-title {
+    color: #e0e0e0;
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #404040;
+}
+
+.page-title {
+    color: #e0e0e0;
+    font-size: 16px;
+    font-weight: 500;
+}

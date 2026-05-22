@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки — FusionAssets</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+    <nav class="menu">
+        <div class="menu-left">
+            <a href="../index.html" class="menu-item">← Назад</a>
+        </div>
+        <div class="menu-center">
+            <h2 class="page-title">Настройки</h2>
+        </div>
+        <div class="menu-right"></div>
+    </nav>
+    <main class="content settings-content">
+        <div class="settings-card">
+            <h3 class="settings-section-title">Разработка</h3>
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">Режим разработчика</div>
+                    <div class="setting-description">Включает кнопки добавления, экспорта и редактирования ассетов</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="debug-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </main>
+    <script src="settings.js"></script>
+</body>
+</html>

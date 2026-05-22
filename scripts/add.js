@@ -1,4 +1,5 @@
-const ENABLED = true;
+const ENABLED_STORAGE_KEY = 'fusionassets_debug_mode';
+const ENABLED = localStorage.getItem(ENABLED_STORAGE_KEY) !== 'false';
 
 function parseTags(input) {
     return input.split(/[ ,;]+/).filter(t => t.trim());
@@ -8,14 +9,15 @@ const filePathMap = {
     'assets_other.js': 'data/assets/other/',
     'assets_plants.js': 'data/assets/plants/',
     'assets_ui.js': 'data/assets/ui/',
-    'assets_zombie.js': 'data/assets/zombie/'
+    'assets_zombie.js': 'data/assets/zombie/',
+    'assets_other': 'data/assets/other/',
+    'assets_plants': 'data/assets/plants/',
+    'assets_ui': 'data/assets/ui/',
+    'assets_zombie': 'data/assets/zombie/'
 };
 
-function getBasePath(path) {
-    for (const [key, val] of Object.entries(filePathMap)) {
-        if (path.startsWith(val)) return val;
-    }
-    return '';
+function getBasePathForKey(key) {
+    return filePathMap[key] || 'data/assets/other/';
 }
 
 const addBtn = document.getElementById('add-btn');
@@ -30,7 +32,9 @@ if (exportBtn) exportBtn.style.display = ENABLED ? 'flex' : 'none';
 if (editBtn) editBtn.style.display = ENABLED ? 'flex' : 'none';
 
 let editMode = false;
+window.editMode = false;
 let selectedCard = null;
+let selectedAsset = null;
 let deletedPaths = [];
 
 if (ENABLED) {
@@ -56,6 +60,7 @@ if (ENABLED) {
 
     editBtn.addEventListener('click', () => {
         editMode = !editMode;
+        window.editMode = editMode;
         editBtn.classList.toggle('active', editMode);
         document.querySelectorAll('.asset-card').forEach(card => {
             card.style.cursor = editMode ? 'pointer' : 'default';
@@ -68,10 +73,10 @@ if (ENABLED) {
             selectedCard = card;
             const name = card.querySelector('.asset-name')?.textContent || '';
             const img = card.querySelector('img')?.src || '';
-            const asset = assets.find(a => a.name === name);
+            selectedAsset = window.assets.find(a => a.name === name) || null;
 
             let currentFile = 'assets_other.js';
-            const path = asset?.path || '';
+            const path = selectedAsset?.path || '';
 
             if (path.includes('/plants/')) currentFile = 'assets_plants.js';
             else if (path.includes('/ui/')) currentFile = 'assets_ui.js';
@@ -79,16 +84,25 @@ if (ENABLED) {
             else if (path.includes('/zombie/')) currentFile = 'assets_zombie.js';
 
             document.getElementById('edit-name').value = name;
-            document.getElementById('edit-tags').value = asset ? asset.tags.join(' ') : '';
+            document.getElementById('edit-tags').value = selectedAsset ? selectedAsset.tags.join(' ') : '';
             document.getElementById('edit-file-select').value = currentFile;
-            document.getElementById('edit-preview').innerHTML = img ? `<img src="${img}" style="max-width: 100%; max-height: 100px; object-fit: contain;">` : '';
+            const editPreview = document.getElementById('edit-preview');
+            editPreview.innerHTML = '';
+            if (img) {
+                const previewImg = document.createElement('img');
+                previewImg.src = img;
+                previewImg.style.maxWidth = '100%';
+                previewImg.style.maxHeight = '100px';
+                previewImg.style.objectFit = 'contain';
+                editPreview.appendChild(previewImg);
+            }
 
             const fileSelect = document.getElementById('edit-file-select');
             fileSelect.onchange = () => {
-                if (asset) {
+                if (selectedAsset) {
                     const basePath = filePathMap[fileSelect.value] || 'data/assets/other/';
-                    const fileName = asset.path.split('/').pop();
-                    asset.path = `${basePath}${fileName}`;
+                    const fileName = selectedAsset.path.split('/').pop();
+                    selectedAsset.path = `${basePath}${fileName}`;
                 }
             };
 
@@ -111,7 +125,13 @@ if (ENABLED) {
         if (file && file.name.endsWith('.png')) {
             const reader = new FileReader();
             reader.onload = (ev) => {
-                editPreview.innerHTML = `<img src="${ev.target.result}" style="max-width: 100%; max-height: 100px; object-fit: contain;">`;
+                editPreview.innerHTML = '';
+                const previewImg = document.createElement('img');
+                previewImg.src = ev.target.result;
+                previewImg.style.maxWidth = '100%';
+                previewImg.style.maxHeight = '100px';
+                previewImg.style.objectFit = 'contain';
+                editPreview.appendChild(previewImg);
                 if (selectedCard) {
                     const imgEl = selectedCard.querySelector('img');
                     if (imgEl) imgEl.src = ev.target.result;
@@ -124,6 +144,28 @@ if (ENABLED) {
     editModal.addEventListener('click', (e) => {
         if (e.target === editModal) {
             editModal.style.display = 'none';
+            editMode = false;
+            window.editMode = false;
+            editBtn.classList.remove('active');
+            selectedCard = null;
+            selectedAsset = null;
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (editModal.style.display === 'flex') {
+                editModal.style.display = 'none';
+                editMode = false;
+                window.editMode = false;
+                editBtn.classList.remove('active');
+                selectedCard = null;
+                selectedAsset = null;
+            } else if (exportModal.style.display === 'flex') {
+                exportModal.style.display = 'none';
+            } else if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
         }
     });
 
@@ -136,36 +178,34 @@ if (ENABLED) {
             const tags = parseTags(document.getElementById('edit-tags').value);
             const fileSelect = document.getElementById('edit-file-select').value;
 
-            if (selectedCard) {
-                const cardName = selectedCard.querySelector('.asset-name')?.textContent;
-                const asset = assets.find(a => a.name === cardName);
-                if (asset) {
-                    asset.name = name;
-                    asset.tags = tags;
-                    selectedCard.querySelector('.asset-name').textContent = name;
-                }
+            if (selectedAsset) {
+                selectedAsset.name = name;
+                selectedAsset.tags = tags;
+                selectedCard.querySelector('.asset-name').textContent = name;
             }
             editModal.style.display = 'none';
             editMode = false;
+            window.editMode = false;
             editBtn.classList.remove('active');
+            selectedCard = null;
+            selectedAsset = null;
         });
     }
 
     if (deleteBtn) {
         deleteBtn.addEventListener('click', () => {
-            if (selectedCard) {
-                const cardName = selectedCard.querySelector('.asset-name')?.textContent;
-                const asset = assets.find(a => a.name === cardName);
-                if (asset) {
-                    deletedPaths.push(asset.path);
-                    const idx = assets.findIndex(a => a.name === cardName);
-                    if (idx !== -1) assets.splice(idx, 1);
-                }
-                selectedCard.remove();
+            if (selectedAsset) {
+                deletedPaths.push(selectedAsset.path);
+                const idx = window.assets.indexOf(selectedAsset);
+                if (idx !== -1) window.assets.splice(idx, 1);
             }
+            if (selectedCard) selectedCard.remove();
             editModal.style.display = 'none';
             editMode = false;
+            window.editMode = false;
             editBtn.classList.remove('active');
+            selectedCard = null;
+            selectedAsset = null;
         });
     }
 
@@ -183,19 +223,15 @@ if (ENABLED) {
                 case 'assets_zombie': data = [...assetsZombie]; break;
             }
 
-            const filePathMap2 = {
-                'assets_other': 'data/assets/other/',
-                'assets_plants': 'data/assets/plants/',
-                'assets_ui': 'data/assets/ui/',
-                'assets_zombie': 'data/assets/zombie/'
-            };
+            const basePath = getBasePathForKey(varName);
+            const newAssets = window.assets.filter(a => a.path.startsWith(basePath) && !data.some(d => d.path === a.path));
 
-            const basePath = filePathMap2[varName] || 'data/assets/plants/';
-            const newAssets = assets.filter(a => a.path.startsWith(basePath) && !data.some(d => d.path === a.path));
+            const filteredDeletedPaths = deletedPaths.filter(p => p.startsWith(basePath));
+            deletedPaths = deletedPaths.filter(p => !p.startsWith(basePath));
 
             if (data || newAssets.length > 0) {
                 data = [...data, ...newAssets];
-                data = data.filter(a => !deletedPaths.includes(a.path));
+                data = data.filter(a => !filteredDeletedPaths.includes(a.path));
                 const content = `const ${varName} = ${JSON.stringify(data, null, 2)};`;
                 const blob = new Blob([content], { type: 'text/javascript' });
                 const url = URL.createObjectURL(blob);
@@ -210,12 +246,11 @@ if (ENABLED) {
     }
 
     const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
     const pathInput = document.getElementById('file-path-input');
     let currentFile = null;
     let currentPath = '';
 
-    if (dropZone && fileInput) {
+    if (dropZone && pathInput) {
         dropZone.addEventListener('click', () => pathInput.click());
 
         dropZone.addEventListener('dragover', (e) => {
@@ -227,6 +262,29 @@ if (ENABLED) {
             dropZone.classList.remove('drag-over');
         });
 
+        function showDropZonePreview(src, pathText) {
+            dropZone.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = src;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100px';
+            img.style.objectFit = 'contain';
+            const div = document.createElement('div');
+            div.style.marginTop = '10px';
+            div.style.color = '#888';
+            div.style.fontSize = '12px';
+            div.textContent = pathText;
+            dropZone.appendChild(img);
+            dropZone.appendChild(div);
+        }
+
+        function resetDropZone() {
+            dropZone.innerHTML = '';
+            const span = document.createElement('span');
+            span.textContent = 'Перетащите PNG сюда или нажмите';
+            dropZone.appendChild(span);
+        }
+
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
@@ -236,14 +294,11 @@ if (ENABLED) {
                 const nameInput = document.getElementById('asset-name');
                 if (nameInput) nameInput.value = file.name;
                 const fileSelect = document.getElementById('data-file-select')?.value || 'assets_plants.js';
-                const basePath = filePathMap[fileSelect] || 'data/assets/plants/';
+                const basePath = getBasePathForKey(fileSelect);
                 currentPath = `${basePath}${file.name}`;
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    dropZone.innerHTML = `
-                        <img src="${ev.target.result}" style="max-width: 100%; max-height: 100px; object-fit: contain;">
-                        <div style="margin-top: 10px; color: #888; font-size: 12px;">${currentPath}</div>
-                    `;
+                    showDropZonePreview(ev.target.result, currentPath);
                 };
                 reader.readAsDataURL(file);
             }
@@ -256,14 +311,11 @@ if (ENABLED) {
                 const nameInput = document.getElementById('asset-name');
                 if (nameInput) nameInput.value = file.name;
                 const fileSelect = document.getElementById('data-file-select')?.value || 'assets_plants.js';
-                const basePath = filePathMap[fileSelect] || 'data/assets/plants/';
+                const basePath = getBasePathForKey(fileSelect);
                 currentPath = `${basePath}${file.name}`;
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    dropZone.innerHTML = `
-                        <img src="${ev.target.result}" style="max-width: 100%; max-height: 100px; object-fit: contain;">
-                        <div style="margin-top: 10px; color: #888; font-size: 12px;">${currentPath}</div>
-                    `;
+                    showDropZonePreview(ev.target.result, currentPath);
                 };
                 reader.readAsDataURL(file);
             }
@@ -273,15 +325,12 @@ if (ENABLED) {
         if (fileSelect) {
             fileSelect.addEventListener('change', () => {
                 if (currentFile) {
-                    const basePath = filePathMap[fileSelect.value] || 'data/assets/plants/';
+                    const basePath = getBasePathForKey(fileSelect.value);
                     currentPath = `${basePath}${currentFile.name}`;
                     const img = dropZone.querySelector('img');
                     if (img) {
                         const src = img.src;
-                        dropZone.innerHTML = `
-                            <img src="${src}" style="max-width: 100%; max-height: 100px; object-fit: contain;">
-                            <div style="margin-top: 10px; color: #888; font-size: 12px;">${currentPath}</div>
-                        `;
+                        showDropZonePreview(src, currentPath);
                     }
                 }
             });
@@ -307,18 +356,33 @@ if (ENABLED) {
                     tags: tags
                 };
 
-                assets.push(newAsset);
+                window.assets.push(newAsset);
 
                 const container = document.getElementById('assets-container');
                 if (container) {
+                    const ext = path.split('.').pop();
                     const card = document.createElement('div');
                     card.className = 'asset-card';
-                    const ext = path.split('.').pop();
-                    card.innerHTML = `
-                        <img src="${path}" alt="${newAsset.name}" class="asset-image" onerror="this.style.display='none'">
-                        <div class="asset-name">${newAsset.name}</div>
-                        <button class="download-btn" onclick="downloadAsset('${path}', '${newAsset.name}.${ext}')">Скачать</button>
-                    `;
+                    const img = document.createElement('img');
+                    img.src = path;
+                    img.alt = newAsset.name;
+                    img.className = 'asset-image';
+                    img.onerror = function() { this.style.display = 'none'; };
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'asset-name';
+                    nameEl.textContent = newAsset.name;
+                    nameEl.title = newAsset.name;
+                    const btn = document.createElement('button');
+                    btn.className = 'download-btn';
+                    btn.textContent = 'Скачать';
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        downloadAsset(path, `${newAsset.name}.${ext}`, btn);
+                    });
+                    card.addEventListener('click', () => openPreview(path, newAsset.name));
+                    card.appendChild(img);
+                    card.appendChild(nameEl);
+                    card.appendChild(btn);
                     container.appendChild(card);
                 }
 
@@ -326,8 +390,7 @@ if (ENABLED) {
 
                 document.getElementById('asset-name').value = '';
                 document.getElementById('asset-tags').value = '';
-                const dropZone = document.getElementById('drop-zone');
-                if (dropZone) dropZone.innerHTML = '<span>Перетащите PNG сюда или нажмите</span>';
+                resetDropZone();
                 currentFile = null;
                 currentPath = '';
             });

@@ -19,11 +19,12 @@
         </div>
         <div class="menu-right">
             <a href="#" class="menu-item">Обратная связь</a>
-            <a href="#" class="menu-item">Настройки</a>
+            <a href="pages/settings.html" class="menu-item">Настройки</a>
         </div>
     </nav>
     <main class="content">
         <div id="assets-container" class="assets-grid"></div>
+        <div id="search-spinner" class="search-spinner" style="display: none;"></div>
     </main>
     <div id="add-modal" class="modal">
         <div class="modal-content">
@@ -31,7 +32,6 @@
             <div id="drop-zone" class="drop-zone">
                 <span>Перетащите PNG сюда или нажмите</span>
             </div>
-            <input type="file" id="file-input" accept=".png" style="display: none;">
             <input type="file" id="file-path-input" accept=".png" webkitdirectory style="display: none;">
             <div style="margin-top: 15px;">
                 <input type="text" id="asset-name" class="modal-input" placeholder="Название файла">
@@ -88,6 +88,20 @@
                 <button id="delete-asset-btn" class="modal-delete-btn">Удалить</button>
             </div>
         </div>
+    </div>
+    <div id="preview-modal" class="preview-modal">
+        <div class="preview-controls">
+            <button id="zoom-out-btn" class="zoom-btn" title="Отдалить">−</button>
+            <span id="zoom-level" class="zoom-level">100%</span>
+            <button id="zoom-in-btn" class="zoom-btn" title="Приблизить">+</button>
+            <button id="zoom-reset-btn" class="zoom-btn" title="Сбросить">⟲</button>
+            <button id="preview-download-btn" class="zoom-btn" title="Скачать">↓</button>
+            <span class="preview-close" title="Закрыть">&times;</span>
+        </div>
+        <div class="preview-image-container">
+            <img id="preview-image" class="preview-image" src="" alt="">
+        </div>
+        <div id="preview-name" class="preview-name"></div>
     </div>
     <script src="data/assets_other.js"></script>
 <script src="data/assets_ui.js"></script>
