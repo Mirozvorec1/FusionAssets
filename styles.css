@@ -317,6 +317,11 @@ body {
     font-weight: 500;
 }
 
+button, .download-btn, .zoom-btn, .preview-close, .toggle-switch, .menu-item, .add-btn, .export-btn, .edit-btn {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
 .search-spinner {
     width: 40px;
     height: 40px;
@@ -348,6 +353,7 @@ body {
     align-items: center;
     flex-direction: column;
     user-select: text;
+    overflow: hidden;
 }
 
 .preview-modal.active {
@@ -424,7 +430,8 @@ body {
     align-items: center;
     width: 100%;
     height: calc(100% - 100px);
-    overflow: auto;
+    overflow: hidden;
+    overscroll-behavior: contain;
 }
 
 .preview-image {
@@ -443,6 +450,83 @@ body {
     text-align: center;
     max-width: 80%;
     word-break: break-word;
+}
+
+.preview-download-btn {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+html.preview-open,
+body.preview-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1px solid #404040;
+    border-radius: 4px;
+    background-color: #1a1a1a;
+    min-height: 40px;
+    cursor: text;
+}
+
+.tags-container:focus-within {
+    border-color: #3b82f6;
+}
+
+.tags-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #e0e0e0;
+    font-size: 14px;
+    flex: 1;
+    min-width: 120px;
+    padding: 2px 0;
+}
+
+.tags-input::placeholder {
+    color: #666;
+}
+
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background-color: #3b82f6;
+    color: white;
+    border-radius: 12px;
+    font-size: 13px;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+.tag-chip .tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.tag-chip .tag-remove:hover {
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .setting-row {

@@ -1,8 +1,71 @@
 const ENABLED_STORAGE_KEY = 'fusionassets_debug_mode';
 const ENABLED = localStorage.getItem(ENABLED_STORAGE_KEY) !== 'false';
 
-function parseTags(input) {
-    return input.split(/[ ,;]+/).filter(t => t.trim());
+function createTagChip(container, text) {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.textContent = text;
+    const removeBtn = document.createElement('span');
+    removeBtn.className = 'tag-remove';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        chip.remove();
+    });
+    chip.appendChild(removeBtn);
+    container.insertBefore(chip, container.querySelector('.tags-input'));
+}
+
+function getTagsFromContainer(container) {
+    const chips = container.querySelectorAll('.tag-chip');
+    return Array.from(chips).map(chip => {
+        const removeBtn = chip.querySelector('.tag-remove');
+        return chip.textContent.replace(removeBtn.textContent, '').trim();
+    }).filter(t => t);
+}
+
+function setTagsInContainer(container, tags) {
+    const chips = container.querySelectorAll('.tag-chip');
+    chips.forEach(chip => chip.remove());
+    for (const tag of tags) {
+        createTagChip(container, tag);
+    }
+}
+
+function handleTagInput(e, container) {
+    const value = e.target.value;
+    const parts = value.split(/[ ,;]+/).filter(t => t.trim());
+    if (parts.length > 0) {
+        for (const part of parts) {
+            const trimmed = part.trim();
+            if (trimmed) createTagChip(container, trimmed);
+        }
+        e.target.value = '';
+    }
+}
+
+function initTagsContainer(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const input = container.querySelector('.tags-input');
+    if (!input) return;
+
+    container.addEventListener('click', () => input.focus());
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleTagInput(e, container);
+        }
+    });
+
+    input.addEventListener('input', (e) => {
+        const value = e.target.value;
+        if (/[ ,;]/.test(value)) {
+            handleTagInput(e, container);
+        }
+    });
 }
 
 const filePathMap = {
@@ -38,6 +101,9 @@ let selectedAsset = null;
 let deletedPaths = [];
 
 if (ENABLED) {
+    initTagsContainer('asset-tags-container');
+    initTagsContainer('edit-tags-container');
+
     addBtn.addEventListener('click', () => {
         modal.style.display = 'flex';
     });
@@ -75,16 +141,16 @@ if (ENABLED) {
             const img = card.querySelector('img')?.src || '';
             selectedAsset = window.assets.find(a => a.name === name) || null;
 
-            let currentFile = 'assets_other.js';
+            let currentFile = 'assets_other';
             const path = selectedAsset?.path || '';
 
-            if (path.includes('/plants/')) currentFile = 'assets_plants.js';
-            else if (path.includes('/ui/')) currentFile = 'assets_ui.js';
-            else if (path.includes('/other/')) currentFile = 'assets_other.js';
-            else if (path.includes('/zombie/')) currentFile = 'assets_zombie.js';
+            if (path.includes('/plants/')) currentFile = 'assets_plants';
+            else if (path.includes('/ui/')) currentFile = 'assets_ui';
+            else if (path.includes('/other/')) currentFile = 'assets_other';
+            else if (path.includes('/zombie/')) currentFile = 'assets_zombie';
 
             document.getElementById('edit-name').value = name;
-            document.getElementById('edit-tags').value = selectedAsset ? selectedAsset.tags.join(' ') : '';
+            setTagsInContainer(document.getElementById('edit-tags-container'), selectedAsset ? selectedAsset.tags : []);
             document.getElementById('edit-file-select').value = currentFile;
             const editPreview = document.getElementById('edit-preview');
             editPreview.innerHTML = '';
@@ -149,6 +215,7 @@ if (ENABLED) {
             editBtn.classList.remove('active');
             selectedCard = null;
             selectedAsset = null;
+            setTagsInContainer(document.getElementById('edit-tags-container'), []);
         }
     });
 
@@ -161,6 +228,7 @@ if (ENABLED) {
                 editBtn.classList.remove('active');
                 selectedCard = null;
                 selectedAsset = null;
+                setTagsInContainer(document.getElementById('edit-tags-container'), []);
             } else if (exportModal.style.display === 'flex') {
                 exportModal.style.display = 'none';
             } else if (modal.style.display === 'flex') {
@@ -175,7 +243,7 @@ if (ENABLED) {
     if (saveEditBtn) {
         saveEditBtn.addEventListener('click', () => {
             const name = document.getElementById('edit-name').value;
-            const tags = parseTags(document.getElementById('edit-tags').value);
+            const tags = getTagsFromContainer(document.getElementById('edit-tags-container'));
             const fileSelect = document.getElementById('edit-file-select').value;
 
             if (selectedAsset) {
@@ -189,6 +257,7 @@ if (ENABLED) {
             editBtn.classList.remove('active');
             selectedCard = null;
             selectedAsset = null;
+            setTagsInContainer(document.getElementById('edit-tags-container'), []);
         });
     }
 
@@ -206,6 +275,7 @@ if (ENABLED) {
             editBtn.classList.remove('active');
             selectedCard = null;
             selectedAsset = null;
+            setTagsInContainer(document.getElementById('edit-tags-container'), []);
         });
     }
 
@@ -340,7 +410,7 @@ if (ENABLED) {
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
                 const name = document.getElementById('asset-name')?.value;
-                const tags = parseTags(document.getElementById('asset-tags')?.value || '');
+                const tags = getTagsFromContainer(document.getElementById('asset-tags-container'));
                 const fileSelect = document.getElementById('data-file-select')?.value;
 
                 if (!name) {
@@ -389,7 +459,7 @@ if (ENABLED) {
                 modal.style.display = 'none';
 
                 document.getElementById('asset-name').value = '';
-                document.getElementById('asset-tags').value = '';
+                setTagsInContainer(document.getElementById('asset-tags-container'), []);
                 resetDropZone();
                 currentFile = null;
                 currentPath = '';

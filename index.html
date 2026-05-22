@@ -37,7 +37,9 @@
                 <input type="text" id="asset-name" class="modal-input" placeholder="Название файла">
             </div>
             <div style="margin-top: 10px;">
-                <input type="text" id="asset-tags" class="modal-input" placeholder="Теги (через пробел, запятую или ;)">
+                <div id="asset-tags-container" class="tags-container">
+                    <input type="text" id="asset-tags" class="tags-input" placeholder="Теги (Enter, пробел, запятая или ; для добавления)">
+                </div>
             </div>
             <div style="margin-top: 10px;">
                 <select id="data-file-select" class="modal-input">
@@ -73,7 +75,9 @@
                 <input type="text" id="edit-name" class="modal-input" placeholder="Название файла">
             </div>
             <div style="margin-top: 10px;">
-                <input type="text" id="edit-tags" class="modal-input" placeholder="Теги (через пробел, запятую или ;)">
+                <div id="edit-tags-container" class="tags-container">
+                    <input type="text" id="edit-tags" class="tags-input" placeholder="Теги (Enter, пробел, запятая или ; для добавления)">
+                </div>
             </div>
             <div style="margin-top: 10px;">
                 <select id="edit-file-select" class="modal-input">
@@ -95,13 +99,13 @@
             <span id="zoom-level" class="zoom-level">100%</span>
             <button id="zoom-in-btn" class="zoom-btn" title="Приблизить">+</button>
             <button id="zoom-reset-btn" class="zoom-btn" title="Сбросить">⟲</button>
-            <button id="preview-download-btn" class="zoom-btn" title="Скачать">↓</button>
             <span class="preview-close" title="Закрыть">&times;</span>
         </div>
         <div class="preview-image-container">
             <img id="preview-image" class="preview-image" src="" alt="">
         </div>
         <div id="preview-name" class="preview-name"></div>
+        <button id="preview-download-btn" class="download-btn preview-download-btn">Скачать</button>
     </div>
     <script src="data/assets_other.js"></script>
 <script src="data/assets_ui.js"></script>

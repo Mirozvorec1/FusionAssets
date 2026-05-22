@@ -188,6 +188,8 @@ let previewCurrentFilename = '';
 let previewMouseDownPos = { x: 0, y: 0 };
 let previewMouseMoved = false;
 
+let previewScrollY = 0;
+
 function openPreview(src, name) {
     const previewModal = document.getElementById('preview-modal');
     const previewImage = document.getElementById('preview-image');
@@ -225,13 +227,19 @@ function openPreview(src, name) {
 
     previewImage.src = src;
     previewImage.alt = name;
+    previewScrollY = window.scrollY;
     previewModal.classList.add('active');
+    document.body.classList.add('preview-open');
+    document.documentElement.classList.add('preview-open');
 }
 
 function closePreview() {
     const previewModal = document.getElementById('preview-modal');
     if (!previewModal) return;
     previewModal.classList.remove('active');
+    document.body.classList.remove('preview-open');
+    document.documentElement.classList.remove('preview-open');
+    window.scrollTo(0, previewScrollY);
     const previewImage = document.getElementById('preview-image');
     if (previewImage) {
         previewImage.src = '';
@@ -337,6 +345,8 @@ document.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.15 : 0.15;
             updateZoom(delta);
+        } else {
+            e.preventDefault();
         }
     }
 }, { passive: false });
